@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var https = require('https')
+var marked = require('marked');
 
 var appKey = '06r6pi3eyiazdm3'
 var appSecret = 'aeunwyrz0lxrk0u'
@@ -45,16 +46,13 @@ router.get('/getAccount', function(reqs, resp, next) {
 });
 
 router.get('/downFile', function(reqs, resp, next) {
-
     var req = https.request(optionsForDownloadMd, function (res) {
         res.on('data', function (chunk) {
-            console.log('BODY: '+chunk);
-            resp.send(''+chunk)
+            resp.send(marked(''+chunk))
         });
         res.on('end', function () {
         })
     }).end();
-
 });
 module.exports = router;
 
