@@ -1,18 +1,60 @@
 var express = require('express');
-var dbox  = require("dbox")
 var router = express.Router();
-var app   = dbox.app({ "app_key": "06r6pi3eyiazdm3", "app_secret": "06r6pi3eyiazdm3" })
+var https = require('https')
+
+var appKey = '06r6pi3eyiazdm3'
+var appSecret = 'aeunwyrz0lxrk0u'
+
+var access_tocken = 'lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk';
 
 
+var optionsForAccountInfo = {
+    hostname: 'api.dropboxapi.com',
+    path: '/2/users/get_current_account',
+    port: 443,
+    method: 'POST',
+    headers: {
+        'Authorization': 'Bearer lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk'
+    }
+};
 
+var optionsForDownloadMd = {
+    hostname: 'content.dropboxapi.com',
+    path: '/2/files/download',
+    port: 443,
+    method: 'POST',
+    headers: {
+        'Authorization': 'Bearer lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk',
+        'Dropbox-API-Arg': '{"path":"/Documents/markdown/Docker.md"}'
+    }
+};
 
-/* GET home page. */
+router.get('/getAccount', function(reqs, resp, next) {
 
-router.get('/', function(req, res, next) {
-    //var client = app.client("lX5-zkIFJGUAAAAAAAB1uBPShfsJVR08xe1HpleNc9llr3xqxElM_QyY0vfo8xAI");
-    app.requesttoken(function(status, request_token){
-        console.log(request_token)
-    })
+    var req = https.request(optionsForAccountInfo, function (res) {
+        res.on('data', function (chunk) {
+            console.log('what is junk');
+            console.log('BODY: '+chunk);
+        });
+        res.on('end', function () {
+            console.log('response end');
+            resp.send()
+        })
+    }).end();
+
+});
+
+router.get('/downFile', function(reqs, resp, next) {
+
+    var req = https.request(optionsForDownloadMd, function (res) {
+        res.on('data', function (chunk) {
+            console.log('BODY: '+chunk);
+            resp.send(''+chunk)
+        });
+        res.on('end', function () {
+        })
+    }).end();
+
 });
 module.exports = router;
 
