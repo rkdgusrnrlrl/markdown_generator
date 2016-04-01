@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <meta charset="utf-8">
+    <!-- 하이라이트.js : 코드 하이라이트-->
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/styles/default.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js"></script>
+    <!-- //하이라이트.js : 코드 하이라이트-->
+
+
+    <link rel='stylesheet' href='/css/my_style.css' />
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-    <img src="/images/1.jpg">
+    <%= body %>
   </body>
+  <script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+  </script>
 </html>

@@ -9,6 +9,8 @@ var appSecret = 'aeunwyrz0lxrk0u'
 var access_tocken = 'lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk';
 
 
+
+
 var optionsForAccountInfo = {
     hostname: 'api.dropboxapi.com',
     path: '/2/users/get_current_account',
@@ -26,7 +28,7 @@ var optionsForDownloadMd = {
     method: 'POST',
     headers: {
         'Authorization': 'Bearer lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk',
-        'Dropbox-API-Arg': '{"path":"/Documents/markdown/Docker.md"}'
+        'Dropbox-API-Arg': '{"path":"/abc"}'
     }
 };
 
@@ -45,14 +47,32 @@ router.get('/getAccount', function(reqs, resp, next) {
 
 });
 
+function getHtmlBody(res, data) {
+    var body = "";
+    if (res.headers['content-type'] == 'application/json') { //error 핸들링
+        var jsonData = JSON.parse(data);
+
+        var error_msg = jsonData['error_summary'];
+        if (error_msg.includes("path/not_found/") > -1) {
+            var body = "해당경로에 파일이 존재하지 않습니다.";
+        }
+    } else {
+        var body = marked('' + data);
+    }
+    return body;
+}
+
 router.get('/downFile', function(reqs, resp, next) {
+
     var req = https.request(optionsForDownloadMd, function (res) {
-        res.on('data', function (chunk) {
-            resp.send(marked(''+chunk))
+        res.on('data', function (data) {
+            var body = getHtmlBody(res, data);
+            console.log("body : "+body);
+            resp.render('index', {body : body})
         });
-        res.on('end', function () {
-        })
     }).end();
+
 });
+
 module.exports = router;
 
