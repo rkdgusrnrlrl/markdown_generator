@@ -62,8 +62,11 @@ function getHtmlBody(res, data) {
     return body;
 }
 
-router.get('/downFile', function(reqs, resp, next) {
-
+router.get('/Documents/*', function(reqs, resp, next) {
+    var filePath = reqs.originalUrl;
+    var path = {"path": filePath };
+    console.log("filePath : "+filePath);
+    optionsForDownloadMd.headers['Dropbox-API-Arg'] = JSON.stringify(path);
     var req = https.request(optionsForDownloadMd, function (res) {
         res.on('data', function (data) {
             var body = getHtmlBody(res, data);
