@@ -3,6 +3,7 @@ var router = express.Router();
 var https = require('https')
 var marked = require('marked');
 
+
 var appKey = '06r6pi3eyiazdm3'
 var appSecret = 'aeunwyrz0lxrk0u'
 var access_tocken = 'lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk';
@@ -16,6 +17,18 @@ var optionsForDownloadMd = {
     headers: {
         'Authorization': 'Bearer lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk',
         'Dropbox-API-Arg': '{"path":"/abc"}'
+    }
+};
+
+//파일 메타 정보 확인을 위한 request option
+var optionsForGetMeta = {
+    hostname: 'api.dropboxapi.com',
+    path: '/2/files/get_metadata',
+    port: 443,
+    method: 'POST',
+    headers: {
+        'Authorization': 'Bearer lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk',
+        'Content-type' : "application/json"
     }
 };
 
@@ -51,17 +64,46 @@ function getHtmlBody(res, data) {
     }
 }
 
-router.get('/Documents/*', function(reqs, resp, next) {
-    var path = {"path": reqs.originalUrl };
-    optionsForDownloadMd.headers['Dropbox-API-Arg'] = JSON.stringify(path);
+var markDownDatas  = {
 
-    var req = https.request(optionsForDownloadMd, function (res) {
-        res.on('data', function (data) {
-            var body = getHtmlBody(res, data);
-            console.log("body : "+body);
-            resp.render('index', {body : body, css : "/css/my_style.css"})
+};
+
+router.get('*', function(reqs, resp, next) {
+    var path = {"path": "/documents/markdown"+reqs.originalUrl };
+
+    var postData = JSON.stringify(path);
+
+
+    var metaReq = https.request(optionsForGetMeta, function (resForMeta) {
+        resForMeta.on('data', function (data) {
+            console.log(data+"");
+            var jsonData = JSON.parse(data+"");
+            var markdownContents = "";
+
+            if (markDownDatas[jsonData.name] == null) {
+                console.log("null 임");
+                optionsForDownloadMd.headers['Dropbox-API-Arg'] = postData;
+                https.request(optionsForDownloadMd, function (resForDown) {
+                    resForDown.on('data', function (downData) {
+                        markDownDatas[jsonData.name] = {
+                            name : jsonData.name,
+                            rev : jsonData.rev,
+                            contents : downData+""
+                        };
+                        markdownContents = downData+"";
+                    });
+                }).end();
+            } else {
+                console.log("null 이 아님");
+                console.log("마크다운 "+JSON.stringify(markDownDatas));
+                markdownContents = markDownDatas[jsonData.name].contents;
+            }
+            resp.render('index', {body : markdownContents, css : "/css/my_style.css"});
         });
-    }).end();
+    });
+
+    metaReq.write(postData);
+    metaReq.end();
 
 });
 
