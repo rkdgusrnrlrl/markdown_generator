@@ -76,12 +76,11 @@ router.get('*', function(reqs, resp, next) {
 
     var metaReq = https.request(optionsForGetMeta, function (resForMeta) {
         resForMeta.on('data', function (data) {
-            console.log(data+"");
+
             var jsonData = JSON.parse(data+"");
             var markdownContents = "";
 
             if (markDownDatas[jsonData.name] == null) {
-                console.log("null 임");
                 optionsForDownloadMd.headers['Dropbox-API-Arg'] = postData;
                 https.request(optionsForDownloadMd, function (resForDown) {
                     resForDown.on('data', function (downData) {
@@ -94,11 +93,9 @@ router.get('*', function(reqs, resp, next) {
                     });
                 }).end();
             } else {
-                console.log("null 이 아님");
-                console.log("마크다운 "+JSON.stringify(markDownDatas));
                 markdownContents = markDownDatas[jsonData.name].contents;
             }
-            resp.render('index', {body : markdownContents, css : "/css/my_style.css"});
+            resp.render('index', {body : marked(markdownContents), css : "/css/my_style.css"});
         });
     });
 
