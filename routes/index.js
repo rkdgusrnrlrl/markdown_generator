@@ -3,6 +3,7 @@ var router = express.Router();
 var https = require('https')
 var marked = require('marked');
 var resource = require('../resource/resource.json');
+var dropbox = require('../lib/drop.js')();
 
 var accessTocken = resource.accessTocken
 
@@ -66,40 +67,72 @@ var markDownDatas  = {
 
 };
 
-router.get('*', function(reqs, resp, next) {
-    var path = {"path": "/documents/markdown"+reqs.originalUrl };
+/**
+ *
+ * @param jsonMeta
+ * @param markdownContents
+ * @param markdownContents
+ * @returns {string|*}
+ */
+function saveMdFile(jsonMeta, markdownContents, markDownDatas) {
+    markDownDatas[jsonMeta.name] = {
+        name: jsonMeta.name,
+        rev: jsonMeta.rev,
+        contents: markdownContents
+    }
+    return markdownContents;
+}
 
-    var postData = JSON.stringify(path);
+
+function getMarkDownContents(jsonData, postData, markdownContents) {
+    if (markDownDatas[jsonData.name] == null) {
+        optionsForDownloadMd.headers['Dropbox-API-Arg'] = postData;
+        https.request(optionsForDownloadMd, function (resForDown) {
+            resForDown.on('data', function (downData) {
+                markdownContents = saveMdFile(jsonData, downData, markDownDatas);
+            });
+        }).end();
+    } else {
+        markdownContents = markDownDatas[jsonData.name].contents;
+    }
+    return markdownContents;
+}
 
 
-    var metaReq = https.request(optionsForGetMeta, function (resForMeta) {
-        resForMeta.on('data', function (data) {
+//파일 있는 지 체크 및 버전(현제 저장된 파일과 같은 버전 인지) 체크후
+//  같은 버전이면 저장된 md 파일을 html 변환후 배포
+//  다른 버전이면 md 파일을 받아 저정후 html 변환하여 배포
+router.get('*', function(reqs, resp) {
+    var filename = reqs.originalUrl
+    console.log(filename)
 
-            var jsonData = JSON.parse(data+"");
-            var markdownContents = "";
-
-            if (markDownDatas[jsonData.name] == null) {
-                optionsForDownloadMd.headers['Dropbox-API-Arg'] = postData;
-                https.request(optionsForDownloadMd, function (resForDown) {
-                    resForDown.on('data', function (downData) {
-                        markDownDatas[jsonData.name] = {
-                            name : jsonData.name,
-                            rev : jsonData.rev,
-                            contents : downData+""
-                        };
-                        markdownContents = downData+"";
-                    });
-                }).end();
-            } else {
-                markdownContents = markDownDatas[jsonData.name].contents;
+    dropbox.getMetaData(filename)
+        .then((jsonData) => {
+            if(markDownDatas[jsonData.name] != null) {
+                console.log(markDownDatas[jsonData.name]['rev'])
+                console.log(jsonData.rev)
             }
+            console.log(markDownDatas[jsonData.name])
+
+            if (markDownDatas[jsonData.name] == null
+                || markDownDatas[jsonData.name]['rev'] == jsonData.rev) {
+                return dropbox.downMarkDown(filename)
+            } else {
+                return markDownDatas[jsonData.name].contents;
+            }
+        },
+            (err) => {
+                console.log(err);
+                resp.end(err);
+            }
+        )
+        .then((markdownContents) => {
+
             resp.render('index', {body : marked(markdownContents), css : "/css/my_style.css"});
-        });
-    });
-
-    metaReq.write(postData);
-    metaReq.end();
-
+        })
+        .catch((err) => {
+            console.log(err)
+        })
 });
 
 module.exports = router;
