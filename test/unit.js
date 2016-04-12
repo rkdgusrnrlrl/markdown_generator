@@ -7,22 +7,16 @@ var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
 var expect = chai.expect;
 var assert = chai.assert;
+var resource = require('../resource/resource.json');
+
 chai.should()
-
-
 chai.use(chaiAsPromised);
 
-//파일 다운로드를 위한 request option
-var optionsForDownloadMd = {
-    hostname: 'content.dropboxapi.com',
-    path: '/2/files/download',
-    port: 443,
-    method: 'POST',
-    headers: {
-        'Authorization': 'Bearer lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk',
-        'Dropbox-API-Arg': '{"path":"/abc"}'
-    }
-};
+
+
+function addAuthorizationToHeader(option, accessTocken) {
+    option['headers']['Authorization'] = 'Bearer '+accessTocken;
+}
 
 
 function getMetaData(filename) {
@@ -32,24 +26,24 @@ function getMetaData(filename) {
         port: 443,
         method: 'POST',
         headers: {
-            'Authorization': 'Bearer lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk',
             'Content-Type': 'application/json'
         }
     };
 
-    var _promise = new Promise((fulfil) => {
+    var _promise = new Promise((fulfil, reject) => {
+        addAuthorizationToHeader(optionsForGetMeta, resource.accessTocken)
         var metaReq = https.request(optionsForGetMeta, function (resForMeta) {
             resForMeta.on('data', function (val) {
                 var json = JSON.parse(val)
                 if (json['error']) {
-                    throw Error(json['error_summary'].replace('/',' '))
+                    reject(Error(json['error_summary'].replace('/',' ')))
                 } else {
                     fulfil(json);
                 }
             });
         })
         var postData = {path:""}
-        postData['path'] = "/documents/markdown/"+filename
+        postData['path'] = "/"+filename
         metaReq.write(JSON.stringify(postData))
         metaReq.end()
     })
@@ -77,21 +71,36 @@ describe("Test getMeatData promise code", function(){
 });
 
 //파일메타데이터 가져오는 프로미스 테스트 : 잘못된 데이터
-/*
+
 describe("Test getMeatData promise code : put wrong filename", function(){
     it("should be error", function() {
-        var _promise = getMetaData("asdfasdf");
+        getMetaData("asdfasdf")
+            .then(null, (err) => {
+                assert.ifError(err)
+            })
     });
 });
-*/
+
 
 // todo 메타 체크해서 성공이면 파일 받기
 
 function promiseDownMarkDown(filename) {
     return new Promise(function (fulfil) {
-        var path = {"path": "/documents/markdown/"+filename};
+        //파일 다운로드를 위한 request option
+        var optionsForDownloadMd = {
+            hostname: 'content.dropboxapi.com',
+            path: '/2/files/download',
+            port: 443,
+            method: 'POST',
+            headers: {
+                'Dropbox-API-Arg': '{"path":"/abc"}'
+            }
+        };
+
+        var path = {"path": "/"+filename};
         var postData = JSON.stringify(path);
         optionsForDownloadMd.headers['Dropbox-API-Arg'] = postData;
+        addAuthorizationToHeader(optionsForDownloadMd, resource.accessTocken)
         https.request(optionsForDownloadMd, function (resForDown) {
             resForDown.on('data', function (downData) {
                 fulfil(downData + "")
@@ -99,14 +108,14 @@ function promiseDownMarkDown(filename) {
         }).end()
     })
 }
-
+//파일정보 가져오는 기능 테스트
 describe("if meta success get mark", function() {
     it("should be get mark", function () {
         var filename = "Docker.md"
         var _promise = promiseDownMarkDown(filename)
         return _promise
             .then((val) => {
-                assert.equal(val, "helo")
+                assert.include(val, "Docker")
             })
     })
 })

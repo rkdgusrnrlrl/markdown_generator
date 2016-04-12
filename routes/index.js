@@ -2,11 +2,9 @@ var express = require('express');
 var router = express.Router();
 var https = require('https')
 var marked = require('marked');
+var resource = require('../resource/resource.json');
 
-
-var appKey = '06r6pi3eyiazdm3'
-var appSecret = 'aeunwyrz0lxrk0u'
-var access_tocken = 'lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk';
+var accessTocken = resource.accessTocken
 
 //파일 다운로드를 위한 request option
 var optionsForDownloadMd = {
@@ -15,7 +13,7 @@ var optionsForDownloadMd = {
     port: 443,
     method: 'POST',
     headers: {
-        'Authorization': 'Bearer lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk',
+        'Authorization': 'Bearer '+accessTocken,
         'Dropbox-API-Arg': '{"path":"/abc"}'
     }
 };
@@ -27,7 +25,7 @@ var optionsForGetMeta = {
     port: 443,
     method: 'POST',
     headers: {
-        'Authorization': 'Bearer lX5-zkIFJGUAAAAAAAB1v-bmjTXqxmA3ZZ3JZMqwbu9GyHp4SkJiz6zn0t7_q-mk',
+        'Authorization': 'Bearer '+accessTocken,
         'Content-type' : "application/json"
     }
 };
