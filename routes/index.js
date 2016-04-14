@@ -1,35 +1,36 @@
 var express = require('express');
 var router = express.Router();
-var https = require('https')
 var marked = require('marked');
-var resource = require('../resource/resource.json');
 var dropbox = require('../lib/drop.js')();
 
-var accessTocken = resource.accessTocken
+//현제 DB 역활을 하는 변수
+var markDownDatas  = {
 
-//파일 다운로드를 위한 request option
-var optionsForDownloadMd = {
-    hostname: 'content.dropboxapi.com',
-    path: '/2/files/download',
-    port: 443,
-    method: 'POST',
-    headers: {
-        'Authorization': 'Bearer '+accessTocken,
-        'Dropbox-API-Arg': '{"path":"/abc"}'
-    }
 };
+/**
+ * *.md 로 들어오는 요청을 처리함
+ * https request 를 활용해 비동기로 dropbox를 핸들링해서
+ * promise 패턴을 사용하였음
+ */
+router.get('*.md', function(reqs, resp) {
+    var filename = reqs.originalUrl
+    dropbox.getMetaData(filename)
+        .then((fileMetaData) => {
+            if (isExsitAndIsSameVer(fileMetaData)) {
+                return downloadAndSaveFile(fileMetaData)
+            } else {
+                return getMdContents(fileMetaData);
+            }
+        })
+        .then((markdownContents) => {
+            resp.render('index', {body : marked(markdownContents), css : "/css/my_style.css"});
+        })
+        .catch((err) => {
+            console.log("에러임!!")
+            resp.render('index', {body : err.message, css : "/css/my_style.css"});
+        })
+});
 
-//파일 메타 정보 확인을 위한 request option
-var optionsForGetMeta = {
-    hostname: 'api.dropboxapi.com',
-    path: '/2/files/get_metadata',
-    port: 443,
-    method: 'POST',
-    headers: {
-        'Authorization': 'Bearer '+accessTocken,
-        'Content-type' : "application/json"
-    }
-};
 
 /**
  * dropbox api 가 error를 json 형태로 보내면
@@ -47,28 +48,8 @@ function errorhandler(data) {
 
     return "에러입니다.";
 }
-
-
 /**
- * respon 을 체크해 application/json 이면 에러로 간추 에러 처리를 함
- * @param res
- * @param data
- * @returns {string}
- */
-function getHtmlBody(res, data) {
-    if (res.headers['content-type'] == 'application/json') { //error 핸들링
-        return errorhandler(data);
-    } else {
-        return marked('' + data);
-    }
-}
-
-var markDownDatas  = {
-
-};
-
-/**
- *
+ * md 파일을 DB 에 저장하고 md 파일 내용을 리턴
  * @param jsonMeta
  * @param markdownContents
  * @param markdownContents
@@ -83,59 +64,34 @@ function saveMdFile(jsonMeta, markdownContents, markDownDatas) {
     return markdownContents;
 }
 
-
-function getMarkDownContents(jsonData, postData, markdownContents) {
-    if (markDownDatas[jsonData.name] == null) {
-        optionsForDownloadMd.headers['Dropbox-API-Arg'] = postData;
-        https.request(optionsForDownloadMd, function (resForDown) {
-            resForDown.on('data', function (downData) {
-                markdownContents = saveMdFile(jsonData, downData, markDownDatas);
-            });
-        }).end();
-    } else {
-        markdownContents = markDownDatas[jsonData.name].contents;
-    }
-    return markdownContents;
+/**
+ * 해당 파일이 DB에 없거나, DB 에 있는 파일이 최신이지 확인
+ * @param jsonData
+ * @returns {boolean}
+ */
+function isExsitAndIsSameVer(jsonData) {
+    return markDownDatas[jsonData.name] == null
+        || markDownDatas[jsonData.name].rev != jsonData.rev;
+}
+/**
+ * 파을일 다운 로드 한뒤  save 하고, 파일 내용을 리턴함
+ * @param fileMetaData
+ * @returns {Promise.<T>|*}
+ */
+function downloadAndSaveFile(fileMetaData) {
+    return dropbox.downMarkDown("/"+fileMetaData.name)
+        .then((markdownfile) => {
+            return saveMdFile(fileMetaData, markdownfile, markDownDatas)
+        });
+}
+/**
+ * @param fileMetaData json 형태의 메타 데이터 파일
+ * @returns {*}
+ */
+function getMdContents(fileMetaData) {
+    return markDownDatas[fileMetaData.name].contents;
 }
 
-
-//파일 있는 지 체크 및 버전(현제 저장된 파일과 같은 버전 인지) 체크후
-//  같은 버전이면 저장된 md 파일을 html 변환후 배포
-//  다른 버전이면 md 파일을 받아 저정후 html 변환하여 배포
-router.get('*.md', function(reqs, resp) {
-    var filename = reqs.originalUrl
-    console.log(filename)
-
-    dropbox.getMetaData(filename)
-        .then((jsonData) => {
-            if (markDownDatas[jsonData.name] == null
-                || markDownDatas[jsonData.name]['rev'] == jsonData.rev) {
-                return dropbox.downMarkDown(filename)
-                            .then((markdownfile) => {
-                                markDownDatas[jsonData.name] = {
-                                    name : jsonData.name,
-                                    rev : jsonData.rev,
-                                    contents : markdownfile
-                                }
-                                return markdownfile;
-                            })
-            } else {
-                return markDownDatas[jsonData.name].contents;
-            }
-        },
-            (err) => {
-                console.log(err);
-                resp.end(err);
-            }
-        )
-        .then((markdownContents) => {
-            resp.render('index', {body : marked(markdownContents), css : "/css/my_style.css"});
-        })
-        .catch((err) => {
-            console.log("에러임!!")
-            console.log(err)
-        })
-});
 
 module.exports = router;
 
