@@ -102,21 +102,23 @@ function getMarkDownContents(jsonData, postData, markdownContents) {
 //파일 있는 지 체크 및 버전(현제 저장된 파일과 같은 버전 인지) 체크후
 //  같은 버전이면 저장된 md 파일을 html 변환후 배포
 //  다른 버전이면 md 파일을 받아 저정후 html 변환하여 배포
-router.get('*', function(reqs, resp) {
+router.get('*.md', function(reqs, resp) {
     var filename = reqs.originalUrl
     console.log(filename)
 
     dropbox.getMetaData(filename)
         .then((jsonData) => {
-            if(markDownDatas[jsonData.name] != null) {
-                console.log(markDownDatas[jsonData.name]['rev'])
-                console.log(jsonData.rev)
-            }
-            console.log(markDownDatas[jsonData.name])
-
             if (markDownDatas[jsonData.name] == null
                 || markDownDatas[jsonData.name]['rev'] == jsonData.rev) {
                 return dropbox.downMarkDown(filename)
+                            .then((markdownfile) => {
+                                markDownDatas[jsonData.name] = {
+                                    name : jsonData.name,
+                                    rev : jsonData.rev,
+                                    contents : markdownfile
+                                }
+                                return markdownfile;
+                            })
             } else {
                 return markDownDatas[jsonData.name].contents;
             }
@@ -127,10 +129,10 @@ router.get('*', function(reqs, resp) {
             }
         )
         .then((markdownContents) => {
-
             resp.render('index', {body : marked(markdownContents), css : "/css/my_style.css"});
         })
         .catch((err) => {
+            console.log("에러임!!")
             console.log(err)
         })
 });
