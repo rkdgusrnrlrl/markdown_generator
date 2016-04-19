@@ -37,7 +37,7 @@ while (true); do
 
 			if [ ${IS_SUCCESS,,} == "y" ]
 			then
-				echo "성공하였습니다"
+				echo "access_tocken 저장을 성공적으로 마쳤습니다."
 
 				#ACCESS_TOKEN 을 resource.json 에 저장
 				mkdir -p resource

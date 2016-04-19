@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "Docker 빌드를 시작합니다."
 if [[ "$(docker images -q mark_img:0.1 2> /dev/null)" == "" ]]; then
   docker build -t mark_img:0.1 .
 fi
