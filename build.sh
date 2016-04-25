@@ -1,5 +1,21 @@
 #!/bin/bash
 
+#인자값을 파싱함
+while getopts "hp:" opt; do
+    case $opt in
+        h)
+            echo "-p 사용할 포트"
+            ;;
+        p)
+            PORT=$OPTARG
+            ;;
+        \?)
+            exit;
+            ;;
+    esac
+done
+
+
 while (true); do
 	echo "아래 url 로 접속하여 API 요청 승인해주세요."
 	echo "https://www.dropbox.com/1/oauth2/authorize?response_type=code&client_id=1v3tq51frfy4t08"
@@ -44,7 +60,7 @@ while (true); do
 				echo "{\"accessTocken\":\"${ACCESS_TOKEN}\"}" >> resource/resource.json
 
 				#docker run 실행
-				./docker_run_shell.sh
+				./docker_run_shell.sh -p ${PORT}
 				break
 			fi
 		fi
