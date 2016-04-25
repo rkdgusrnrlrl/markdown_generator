@@ -30,17 +30,17 @@
 
 ## 빌드 방법 ##
 1. 우선 소스를 github 에서 내려받아 `저장할 폴더`에 넣어준다.
-~~~bash
-git clone https://github.com/rkdgusrnrlrl/markdown_generator.git {저장할 폴더}
-~~~
+    ~~~bash
+    git clone https://github.com/rkdgusrnrlrl/markdown_generator.git {저장할 폴더}
+    ~~~
 2. `저장할 폴더`로 들어가서 쉘스크립트에 실행 권한을 준다.
-~~~bash
-cd {저장할 폴더} && ls | grep .sh | xargs -i chmod +x {}
-~~~
+    ~~~bash
+    cd {저장할 폴더} && ls | grep .sh | xargs -i chmod +x {}
+    ~~~
 3. build.sh 을 실행 시킨다.
-~~~bash
-./build.sh
-~~~
+    ~~~bash
+    ./build.sh
+    ~~~
 
 ## 사용중인 모듈들 ##
 - [express](https://www.npmjs.com/package/express) : 라우팅 및 static 서버를 지원해 웹서버 개발하는데 도움이 되었다.
