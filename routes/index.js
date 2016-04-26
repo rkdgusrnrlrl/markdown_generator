@@ -79,10 +79,14 @@ function isExsitAndIsSameVer(jsonData) {
  * @returns {Promise.<T>|*}
  */
 function downloadAndSaveFile(fileMetaData) {
-    return dropbox.downMarkDown("/"+fileMetaData.name)
-        .then((markdownfile) => {
-            return saveMdFile(fileMetaData, markdownfile, markDownDatas)
-        });
+    if (fileMetaData.size == 0) {
+        return saveMdFile(fileMetaData, "", markDownDatas)
+    } else {
+        return dropbox.downMarkDown("/"+fileMetaData.name)
+            .then((markdownfile) => {
+                return saveMdFile(fileMetaData, markdownfile, markDownDatas)
+            });
+    }
 }
 /**
  * @param fileMetaData json 형태의 메타 데이터 파일

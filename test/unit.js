@@ -57,6 +57,19 @@ describe("if meta success get mark", function() {
     })
 })
 
+describe("if empty mark file", function() {
+    it("should be show empty", function () {
+        var filename = "WorkFlow.md"
+        return dropbox.getMetaData(filename)
+            .then(() => {
+                return dropbox.downMarkDown(filename)
+            })
+            .then((markdown) => {
+                assert.include(markdown, "Docker")
+            })
+    })
+})
+
 
 
 
