@@ -15,7 +15,7 @@ chai.use(chaiAsPromised);
 //파일메타데이터 가져오는 프로미스 테스트
 describe("Test getMeatData promise code", function(){
     it("should be contains Docker.md", function() {
-        return dropbox.getMetaData("Docker.md")
+        return dropbox.getMetaData("/Docker.md")
             .then((fileMeta) => {
                 expect(fileMeta['name']).equal("Docker.md")
             })
@@ -25,7 +25,7 @@ describe("Test getMeatData promise code", function(){
 //파일메타데이터 가져오는 프로미스 테스트 : 잘못된 데이터
 describe("Test getMeatData promise code : put wrong filename", function(){
     it("should be error", function() {
-        dropbox.getMetaData("asdfasdf")
+        dropbox.getMetaData("/asdfasdf")
             .then(null, (err) => {
                 assert.ifError(err)
             })
@@ -35,7 +35,7 @@ describe("Test getMeatData promise code : put wrong filename", function(){
 //마크다운 파일 가져오는지 테스트
 describe("get markdown file", function() {
     it("should be get mark", function () {
-        var filename = "Docker.md"
+        var filename = "/Docker.md"
         return dropbox.downMarkDown(filename)
             .then((val) => {
                 assert.include(val, "Docker")
@@ -46,7 +46,7 @@ describe("get markdown file", function() {
 //파일정보 체크후 마크다운 파일 가져오기
 describe("if meta success get mark", function() {
     it("should be get mark", function () {
-        var filename = "Docker.md"
+        var filename = "/Docker.md"
         return dropbox.getMetaData(filename)
             .then(() => {
                 return dropbox.downMarkDown(filename)
@@ -57,15 +57,34 @@ describe("if meta success get mark", function() {
     })
 })
 
+//파일에 내용이 없는 경우 무한 루프 도는 것을 방지.
+//curl의 경우 문제가 없느나 node의 https request의 경우 계속 돌음
 describe("if empty mark file", function() {
+
+    function saveMdFile(jsonMeta, markdownContents, markDownDatas) {
+        markDownDatas[jsonMeta.name] = {
+            name: jsonMeta.name,
+            rev: jsonMeta.rev,
+            contents: markdownContents
+        }
+        return markdownContents;
+    }
+
     it("should be show empty", function () {
-        var filename = "WorkFlow.md"
+        var filename = "/WorkFlow.md"
         return dropbox.getMetaData(filename)
-            .then(() => {
-                return dropbox.downMarkDown(filename)
+            .then((fileMetaData) => {
+                if (fileMetaData.size == 0) {
+                    return saveMdFile(fileMetaData, "", markDownDatas)
+                } else {
+                    return dropbox.downMarkDown("/"+fileMetaData.name)
+                        .then((markdownfile) => {
+                            return saveMdFile(fileMetaData, markdownfile, markDownDatas)
+                        });
+                }
             })
             .then((markdown) => {
-                assert.include(markdown, "Docker")
+                assert.equal(markdown, "")
             })
     })
 })
