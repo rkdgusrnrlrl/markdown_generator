@@ -3,6 +3,21 @@ var router = express.Router();
 var marked = require('marked');
 var dropbox = require('../lib/drop.js')();
 
+marked.setOptions({
+    renderer: new marked.Renderer(),
+    gfm: true,
+    tables: true,
+    breaks: true,
+    pedantic: false,
+    sanitize: true,
+    smartLists: true,
+    smartypants: false,
+    highlight: function (code) {
+        return require('highlight.js').highlightAuto(code).value;
+    }
+});
+
+
 //현제 DB 역활을 하는 변수
 var markDownDatas  = {
 
@@ -23,7 +38,13 @@ router.get('*.md', function(reqs, resp) {
             }
         })
         .then((markdownContents) => {
-            resp.render('index', {body : marked(markdownContents), css : "/css/my_style.css"});
+            var pettern = /<h1[^>]*>([^<]*)<\/h1>/;
+            var title = ""
+            var body = marked(markdownContents)
+            if (pettern.test(body)) {
+                title =  RegExp.$1
+            }
+            resp.render('index', {title: title, body : body, css : "/css/my_style.css"});
         })
         .catch((err) => {
             console.log("에러임!!")
@@ -56,6 +77,7 @@ function errorhandler(data) {
  * @returns {string|*}
  */
 function saveMdFile(jsonMeta, markdownContents, markDownDatas) {
+    console.log()
     markDownDatas[jsonMeta.name] = {
         name: jsonMeta.name,
         rev: jsonMeta.rev,
