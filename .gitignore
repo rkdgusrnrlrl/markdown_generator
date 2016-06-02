@@ -3,3 +3,4 @@ node_modules/
 projectFilesBackup/
 test/test_promise.js
 resource/resource.json
+public/img
