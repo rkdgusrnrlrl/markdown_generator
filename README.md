@@ -30,15 +30,15 @@
 
 ## 빌드 방법 ##
 1. 우선 소스를 github 에서 내려받아 `저장할 폴더`에 넣어준다.
-    ```bash
+    ```shell
     git clone https://github.com/rkdgusrnrlrl/markdown_generator.git {저장할 폴더}
     ```
 2. `저장할 폴더`로 들어가서 쉘스크립트에 실행 권한을 준다.
-    ```bash
+    ```shell
     cd {저장할 폴더} && ls | grep .sh | xargs -i chmod +x {}
     ```
 3. build.sh 을 실행 시킨다.
-    ```bash
+    ```shell
     ./build.sh
     ```
 
