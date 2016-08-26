@@ -32,7 +32,22 @@ var markDownDatas  = {
 };
 
 router.get('/', function(reqs, resp) {
-    resp.render('index', {title : "메인페이지",body : "메인페이지", css : "/css/my_style.css"});
+    dropbox.getAllFileList()
+        .then((json) => {
+            var allFileList = JSON.parse(json).entries;
+            var body = "<ul>";
+            allFileList.forEach((val)=> {
+                if (val['.tag'] == "file") {
+                    body += `<li><a href="${val.name}"> ${ val.name.replace(".md", "") }</a></li>`;
+                }
+            })
+            body += "</ul>";
+            return body
+        })
+        .then((body) => {
+            resp.render('index', {title : "메인페이지",body : body, css : "/css/my_style.css"});
+        })
+
 });
 
 
