@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var marked = require('marked');
 var dropbox = require('../lib/drop.js')();
-
+var moment = require('moment');
 
 //const css = "/css/my_style.css";
 const css = "/css/slim.css";
@@ -29,21 +29,50 @@ function unicodeEscape(str) {
     return result;
 }
 
-
 //현제 DB 역활을 하는 변수
 var markDownDatas = {};
 
 router.get('/', function (reqs, resp) {
     dropbox.getAllFileList()
         .then((json) => {
+            console.log("json date recieve");
             var allFileList = JSON.parse(json).entries;
-            var body = "<ul>";
+            var body =
+            `
+            <div class="home">
+                <section>
+                    <h2 class="smallcap">about</h2>
+                    <p><a href="http://dakbutfly.me:81/">DakButFly개발서</a>는 개발 경험 정리 및 공유를 위한 사이트 이다. 해당 사이트는 <a href="https://github.com/syaning/slim">slim</a>테마를 기반으로 만들어졌다. </p>
+                </section>
+                <section>
+                    <h2 class="smallcap">posts</h2>
+                    <ul class="post-list">
+            `;
+
+
+            console.log("start make li");
+
             allFileList.forEach((val)=> {
                 if (val['.tag'] == "file") {
-                    body += `<li><a href="${val.name}"> ${ val.name.replace(".md", "") }</a></li>`;
+                    var writenDate = moment(val.client_modified).format("YYYY-MM-DD");
+
+                    body +=
+                    `
+                    <li>
+                        <span> ${ writenDate } </span>
+                        <a href="${val.name}">${ val.name.replace(".md", "") }</a>
+                    </li>
+                    `;
                 }
             });
-            body += "</ul>";
+            console.log("end make li");
+            body +=
+            `
+                            </ul>
+                    <p><a href="javascript:;">view more...</a></p>
+                </section>
+            </div>
+            `;
             return body
         })
         .then((body) => {
