@@ -30,6 +30,13 @@ function unicodeEscape(str){
 var markDownDatas  = {
 
 };
+
+router.get('/', function(reqs, resp) {
+    resp.render('index', {title : "메인페이지",body : "메인페이지", css : "/css/my_style.css"});
+});
+
+
+
 /**
  * *.md 로 들어오는 요청을 처리함
  * https request 를 활용해 비동기로 dropbox를 핸들링해서
