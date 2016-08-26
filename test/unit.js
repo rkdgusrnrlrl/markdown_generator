@@ -172,6 +172,16 @@ describe("한글파일명 처리", function() {
 
 
 describe("전체 리스트 가져오는 코드", function() {
+    it("dropbox-api 사용", function () {
+        return dropbox.getAllFileList()
+            .then((json) => {
+                var allFileList = JSON.parse(json).entries;
+                allFileList.forEach((val)=> {
+                    console.log(val.name);
+                })
+            });
+    });
+
     var https = require('https')
     var option = {
         hostname: 'api.dropboxapi.com',
