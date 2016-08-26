@@ -17,6 +17,14 @@ marked.setOptions({
     }
 });
 
+function unicodeEscape(str){
+    var result = "";
+    for(var i = 0; i < str.length; i++){
+        result += "\\u" + ("000" + str[i].charCodeAt(0).toString(16)).substr(-4);
+    }
+    return result;
+};
+
 
 //현제 DB 역활을 하는 변수
 var markDownDatas  = {
@@ -28,11 +36,13 @@ var markDownDatas  = {
  * promise 패턴을 사용하였음
  */
 router.get('*.md', function(reqs, resp) {
-    var filename = reqs.originalUrl
+    var filename = decodeURI(reqs.originalUrl);
+    console.log(filename);
     dropbox.getMetaData(filename)
         .then((fileMetaData) => {
+            console.log(fileMetaData);
             if (isExsitAndIsSameVer(fileMetaData)) {
-                return downloadAndSaveFile(fileMetaData)
+                return downloadAndSaveFile(fileMetaData);
             } else {
                 return getMdContents(fileMetaData);
             }
@@ -42,7 +52,7 @@ router.get('*.md', function(reqs, resp) {
             var title = ""
             var body = marked(markdownContents)
             if (pettern.test(body)) {
-                title =  RegExp.$1
+                title =  RegExp.$1;
             }
             resp.render('index', {title: title, body : body, css : "/css/my_style.css"});
         })
@@ -104,7 +114,10 @@ function downloadAndSaveFile(fileMetaData) {
     if (fileMetaData.size == 0) {
         return saveMdFile(fileMetaData, "", markDownDatas)
     } else {
-        return dropbox.downMarkDown("/"+fileMetaData.name)
+        console.log(fileMetaData.name);
+        var encFileName = unicodeEscape("/"+fileMetaData.name);
+        console.log(encFileName);
+        return dropbox.downMarkDown(encFileName)
             .then((markdownfile) => {
                 return saveMdFile(fileMetaData, markdownfile, markDownDatas)
             });
