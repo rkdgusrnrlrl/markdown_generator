@@ -3,6 +3,10 @@ var router = express.Router();
 var marked = require('marked');
 var dropbox = require('../lib/drop.js')();
 
+
+//const css = "/css/my_style.css";
+const css = "/css/slim.css";
+
 marked.setOptions({
     renderer: new marked.Renderer(),
     gfm: true,
@@ -17,21 +21,19 @@ marked.setOptions({
     }
 });
 
-function unicodeEscape(str){
+function unicodeEscape(str) {
     var result = "";
-    for(var i = 0; i < str.length; i++){
+    for (var i = 0; i < str.length; i++) {
         result += "\\u" + ("000" + str[i].charCodeAt(0).toString(16)).substr(-4);
     }
     return result;
-};
+}
 
 
 //현제 DB 역활을 하는 변수
-var markDownDatas  = {
+var markDownDatas = {};
 
-};
-
-router.get('/', function(reqs, resp) {
+router.get('/', function (reqs, resp) {
     dropbox.getAllFileList()
         .then((json) => {
             var allFileList = JSON.parse(json).entries;
@@ -40,16 +42,17 @@ router.get('/', function(reqs, resp) {
                 if (val['.tag'] == "file") {
                     body += `<li><a href="${val.name}"> ${ val.name.replace(".md", "") }</a></li>`;
                 }
-            })
+            });
             body += "</ul>";
             return body
         })
         .then((body) => {
-            resp.render('index', {title : "메인페이지",body : body, css : "/css/my_style.css"});
+
+
+            resp.render('index', {title: "메인페이지", body: body, css: css});
         })
 
 });
-
 
 
 /**
@@ -57,7 +60,7 @@ router.get('/', function(reqs, resp) {
  * https request 를 활용해 비동기로 dropbox를 핸들링해서
  * promise 패턴을 사용하였음
  */
-router.get('*.md', function(reqs, resp) {
+router.get('*.md', function (reqs, resp) {
     var filename = decodeURI(reqs.originalUrl);
     console.log(filename);
     dropbox.getMetaData(filename)
@@ -71,50 +74,35 @@ router.get('*.md', function(reqs, resp) {
         })
         .then((markdownContents) => {
             var pettern = /<h1[^>]*>([^<]*)<\/h1>/;
-            var title = ""
-            var body = marked(markdownContents)
+            var title = "";
+            var body = marked(markdownContents);
             if (pettern.test(body)) {
-                title =  RegExp.$1;
+                title = RegExp.$1;
             }
-            resp.render('index', {title: title, body : body, css : "/css/my_style.css"});
+            resp.render('index', {title: title, body: body, css: css});
         })
         .catch((err) => {
-            console.log("에러임!!")
-            resp.render('index', {body : err.message, css : "/css/my_style.css"});
+            console.log("에러임!!");
+            resp.render('index', {body: err.message, css: css});
         })
 });
 
 
-/**
- * dropbox api 가 error를 json 형태로 보내면
- * error_summary 파악해 error 메세지를 리턴
- * @param data
- */
-function errorhandler(data) {
-    var jsonData = JSON.parse(data);
 
-    var error_msg = jsonData['error_summary'];
-
-    if (error_msg.includes("path/not_found/") > -1) {
-        return "해당경로에 파일이 존재하지 않습니다.";
-    }
-
-    return "에러입니다.";
-}
 /**
  * md 파일을 DB 에 저장하고 md 파일 내용을 리턴
  * @param jsonMeta
  * @param markdownContents
- * @param markdownContents
+ * @param markDownDatas
  * @returns {string|*}
  */
 function saveMdFile(jsonMeta, markdownContents, markDownDatas) {
-    console.log()
+    console.log();
     markDownDatas[jsonMeta.name] = {
         name: jsonMeta.name,
         rev: jsonMeta.rev,
         contents: markdownContents
-    }
+    };
     return markdownContents;
 }
 
@@ -130,14 +118,14 @@ function isExsitAndIsSameVer(jsonData) {
 /**
  * 파을일 다운 로드 한뒤  save 하고, 파일 내용을 리턴함
  * @param fileMetaData
- * @returns {Promise.<T>|*}
+ * @returns {Promise}
  */
 function downloadAndSaveFile(fileMetaData) {
     if (fileMetaData.size == 0) {
         return saveMdFile(fileMetaData, "", markDownDatas)
     } else {
         console.log(fileMetaData.name);
-        var encFileName = unicodeEscape("/"+fileMetaData.name);
+        var encFileName = unicodeEscape("/" + fileMetaData.name);
         console.log(encFileName);
         return dropbox.downMarkDown(encFileName)
             .then((markdownfile) => {
