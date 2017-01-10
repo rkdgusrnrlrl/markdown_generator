@@ -34,24 +34,9 @@ var markDownDatas = {};
 
 router.get('/', function (reqs, resp) {
     dropbox.getAllFileList()
-        .then((json) => {
-            console.log("json date recieve");
+        .then((json) => { //json data 가공(sort 랑 write date property 추가)
+
             var allFileList = JSON.parse(json).entries;
-            var body =
-            `
-            <div class="home">
-                <section>
-                    <h2 class="smallcap">about</h2>
-                    <p><a href="http://dakbutfly.me/">DakButFly개발서</a>는 개발 경험 정리 위한 사이트 이다. 해당 사이트는 <a href="https://github.com/syaning/slim">slim</a>테마를 기반으로 만들어졌다. </p>
-                </section>
-                <section>
-                    <h2 class="smallcap">posts</h2>
-                    <ul class="post-list">
-            `;
-
-
-            console.log("start make li");
-
             allFileList.sort((f, s)=>{
                 // f 가 크면 1, s가 크면 -1 같으면 0
                 if (moment(f.server_modified).isSame(s.server_modified, 'day')) return 0;
@@ -62,33 +47,15 @@ router.get('/', function (reqs, resp) {
                 }
             });
 
-            allFileList.forEach((val)=> {
-                if (val['.tag'] == "file") {
-                    var writenDate = moment(val.server_modified).format("YYYY-MM-DD");
-
-                    body +=
-                    `
-                    <li>
-                        <span> ${ writenDate } </span>
-                        <a href="${val.name}">${ val.name.replace(".md", "") }</a>
-                    </li>
-                    `;
-                }
+            allFileList.forEach((val) => {
+                var writenDate = moment(val.server_modified).format("YYYY-MM-DD");
+                val['writenDate'] = writenDate;
             });
-            console.log("end make li");
-            body +=
-            `
-                            </ul>
-                    <!--<p><a href="javascript:;">view more...</a></p>-->
-                </section>
-            </div>
-            `;
-            return body
+
+            return allFileList
         })
-        .then((body) => {
-
-
-            resp.render('index', {title: "메인페이지", body: body, css: css});
+        .then((allFileList) => {
+            resp.render('home', {title: "메인페이지", allFileList: allFileList, css: css});
         })
 
 });
@@ -115,7 +82,6 @@ router.get('*.md', function (reqs, resp) {
             var pettern = /<h1[^>]*>([^<]*)<\/h1>/;
             var title = "";
             var body = marked(markdownContents);
-            console.log(body);
             if (pettern.test(body)) {
                 title = RegExp.$1;
             }
@@ -137,7 +103,6 @@ router.get('*.md', function (reqs, resp) {
  * @returns {string|*}
  */
 function saveMdFile(jsonMeta, markdownContents, markDownDatas) {
-    console.log();
     markDownDatas[jsonMeta.name] = {
         name: jsonMeta.name,
         rev: jsonMeta.rev,
@@ -164,9 +129,7 @@ function downloadAndSaveFile(fileMetaData) {
     if (fileMetaData.size == 0) {
         return saveMdFile(fileMetaData, "", markDownDatas)
     } else {
-        console.log(fileMetaData.name);
         var encFileName = unicodeEscape("/" + fileMetaData.name);
-        console.log(encFileName);
         return dropbox.downMarkDown(encFileName)
             .then((markdownfile) => {
                 return saveMdFile(fileMetaData, markdownfile, markDownDatas)

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <!-- 하이라이트.js : 코드 하이라이트-->
+        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/default.min.css">
+
+        <!-- //하이라이트.js : 코드 하이라이트-->
+        <link rel='stylesheet' href='<%= css %>'/>
+        <title><%= title %></title>
+    </head>
+    <body>
+        <header class="site-header">
+            <a class="site-title" href="http://dakbutfly.me:81">DakButFly 개발서</a>
+        </header>
+        <div class="page-content markdown-body">
+
+            <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+                <div class="post-content" itemprop="articleBody">
+                    <div class="home">
+                        <section>
+                            <h2 class="smallcap">about</h2>
+                            <p><a href="http://dakbutfly.me/">DakButFly개발서</a>는 개발 경험 정리 위한 사이트 이다. 해당 사이트는 <a href="https://github.com/syaning/slim">slim</a>테마를 기반으로 만들어졌다. </p>
+                        </section>
+                        <section>
+                            <h2 class="smallcap">posts</h2>
+                            <ul class="post-list">
+                                <%
+                                allFileList.forEach((val)=> {
+                                    if (val['.tag'] == "file") {
+                                        var writenDate = val.writenDate;
+                                %>
+                                <li>
+                                    <span> <%=writenDate%> </span>
+                                    <a href="<%=val.name%>"><%=val.name.replace(".md", "")%></a>
+                                </li>
+                                <%
+                                }});
+                                %>
+                            </ul>
+                            <!--<p><a href="javascript:;">view more...</a></p>-->
+                        </section>
+                    </div>
+
+                </div>
+            </article>
+        </div>
+    </body>
+</html>
