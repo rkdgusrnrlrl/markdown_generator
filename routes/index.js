@@ -42,7 +42,7 @@ router.get('/', function (reqs, resp) {
             <div class="home">
                 <section>
                     <h2 class="smallcap">about</h2>
-                    <p><a href="http://dakbutfly.me:81/">DakButFly개발서</a>는 개발 경험 정리 및 공유를 위한 사이트 이다. 해당 사이트는 <a href="https://github.com/syaning/slim">slim</a>테마를 기반으로 만들어졌다. </p>
+                    <p><a href="http://dakbutfly.me/">DakButFly개발서</a>는 개발 경험 정리 위한 사이트 이다. 해당 사이트는 <a href="https://github.com/syaning/slim">slim</a>테마를 기반으로 만들어졌다. </p>
                 </section>
                 <section>
                     <h2 class="smallcap">posts</h2>
@@ -52,9 +52,19 @@ router.get('/', function (reqs, resp) {
 
             console.log("start make li");
 
+            allFileList.sort((f, s)=>{
+                // f 가 크면 1, s가 크면 -1 같으면 0
+                if (moment(f.server_modified).isSame(s.server_modified, 'day')) return 0;
+                if (moment(f.server_modified).isAfter(s.server_modified, 'day')) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+
             allFileList.forEach((val)=> {
                 if (val['.tag'] == "file") {
-                    var writenDate = moment(val.client_modified).format("YYYY-MM-DD");
+                    var writenDate = moment(val.server_modified).format("YYYY-MM-DD");
 
                     body +=
                     `
@@ -69,7 +79,7 @@ router.get('/', function (reqs, resp) {
             body +=
             `
                             </ul>
-                    <p><a href="javascript:;">view more...</a></p>
+                    <!--<p><a href="javascript:;">view more...</a></p>-->
                 </section>
             </div>
             `;
@@ -100,11 +110,12 @@ router.get('*.md', function (reqs, resp) {
             } else {
                 return getMdContents(fileMetaData);
             }
-        })
+        }, (json) => console.log(json))
         .then((markdownContents) => {
             var pettern = /<h1[^>]*>([^<]*)<\/h1>/;
             var title = "";
             var body = marked(markdownContents);
+            console.log(body);
             if (pettern.test(body)) {
                 title = RegExp.$1;
             }
