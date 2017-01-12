@@ -3,6 +3,8 @@ var router = express.Router();
 var marked = require('marked');
 var dropbox = require('../lib/drop.js')();
 var moment = require('moment');
+var Entities = require('html-entities').XmlEntities;
+var entities = new Entities();
 
 //const css = "/css/my_style.css";
 const css = "/css/slim.css";
@@ -84,6 +86,8 @@ router.get('*.md', function (reqs, resp) {
             var body = marked(markdownContents);
             if (pettern.test(body)) {
                 title = RegExp.$1;
+                title = entities.decode(title);
+                console.log(title);
             }
             resp.render('index', {title: title, body: body, css: css});
         })
