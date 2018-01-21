@@ -57,7 +57,7 @@ while (true); do
 
 				#ACCESS_TOKEN 을 resource.json 에 저장
 				mkdir -p resource
-				echo "{\"accessTocken\":\"${ACCESS_TOKEN}\"}" >> resource/resource.json
+				echo "{\"accessTocken\":\"${ACCESS_TOKEN}\"}" > resource/resource.json
 
 				#docker run 실행
 				./docker_run_shell.sh -p ${PORT}

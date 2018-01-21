@@ -1,17 +1,26 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <!-- 하이라이트.js : 코드 하이라이트-->
-    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/styles/default.min.css">
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js"></script>
-    <!-- //하이라이트.js : 코드 하이라이트-->
-    <link rel='stylesheet' href='<%= css %>' />
-  </head>
-  <body>
-    <%- body %>
-  </body>
-  <script type="text/javascript">
-    hljs.initHighlightingOnLoad();
-  </script>
+    <head>
+        <meta charset="utf-8">
+        <!-- 하이라이트.js : 코드 하이라이트-->
+        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/default.min.css">
+
+        <!-- //하이라이트.js : 코드 하이라이트-->
+        <link rel='stylesheet' href='<%= css %>'/>
+        <title><%- title %></title>
+    </head>
+    <body>
+        <header class="site-header">
+            <a class="site-title" href="http://dakbutfly.me">DakButFly 개발서</a>
+        </header>
+        <div class="page-content markdown-body">
+
+            <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+                <div class="post-content" itemprop="articleBody">
+                    <%- body %>
+                </div>
+            <!-- disque 추가 할 곳 -->
+            </article>
+        </div>
+    </body>
 </html>
