@@ -51,7 +51,7 @@ while (true); do
 			echo "사용자명이 맞습니까?(y/n)"
 			read IS_SUCCESS
 
-			if [ ${IS_SUCCESS,,} == "y" ]
+			if [ ${IS_SUCCESS} == "y" ]
 			then
 				echo "access_tocken 저장을 성공적으로 마쳤습니다."
 
