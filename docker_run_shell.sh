@@ -1,36 +1,25 @@
 #!/bin/bash
 
-#인자값을 파싱함
-while getopts "hp:" opt; do
-    case $opt in
-        h)
-            echo "-p 사용할 포트"
-            ;;
-        p)
-            PORT=$OPTARG
-            ;;
-        \?)
-            exit;
-            ;;
-    esac
-done
-
-if [[ $PORT == "" ]]; then
-    PORT="81"
-fi
-
-
 echo "Docker 빌드를 시작합니다."
+
+PROJECT_NAME="mark"
+
+IMG_NAME="${PROJECT_NAME}_img"
+IMG_VER="0.03"
+
+CONT_NAME="${PROJECT_NAME}_cont"
+
 DIR=$(pwd)
-if [[ "$(docker images -q mark_img:0.3 2> /dev/null)" == "" ]]; then
-  docker build -t mark_img:0.3 .
+
+# if not exist image will be build
+if [[ "$(docker images -q "${IMG_NAME}:${IMG_VER}" 2> /dev/null)" == "" ]]; then
+  docker build -t "${IMG_NAME}:${IMG_VER}" .
 fi
 
-if [[ "$(docker ps -a | grep mark_cont 2> /dev/null)" != "" ]]; then
-  docker rm -f mark_cont
+# check docker container exist if exist will be remove
+if [[ "$(docker ps -a | grep $CONT_NAME 2> /dev/null)" != "" ]]; then
+  docker rm -f $CONT_NAME
 fi
 
-
-docker run -itd --name mark_cont -p ${PORT}:3000 mark_img:0.1 bash
-docker exec mark_cont forever start /data/bin/www
-
+#run script
+docker run -itd --name $CONT_NAME -v ${DIR}/public:/data/public --network docker-network "${IMG_NAME}:${IMG_VER}" bash
