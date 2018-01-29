@@ -70,16 +70,14 @@ router.get('/', function (reqs, resp) {
  */
 router.get('*.md', function (reqs, resp) {
     var filename = decodeURI(reqs.originalUrl);
-    console.log(filename);
     dropbox.getMetaData(filename)
         .then((fileMetaData) => {
-            console.log(fileMetaData);
             if (isExsitAndIsSameVer(fileMetaData)) {
                 return downloadAndSaveFile(fileMetaData);
             } else {
                 return getMdContents(fileMetaData);
             }
-        }, (json) => console.log(json))
+        })
         .then((markdownContents) => {
             var pettern = /<h1[^>]*>([^<]*)<\/h1>/;
             var title = "";
@@ -87,12 +85,11 @@ router.get('*.md', function (reqs, resp) {
             if (pettern.test(body)) {
                 title = RegExp.$1;
                 title = entities.decode(title);
-                console.log(title);
             }
             resp.render('index', {title: title, body: body, css: css});
         })
         .catch((err) => {
-            console.log("에러임!!");
+            console.error("에러임!!");
             resp.render('index', {body: err.message, css: css});
         })
 });
