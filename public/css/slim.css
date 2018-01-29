@@ -19,7 +19,7 @@ figure > img { display: block; }
 figcaption { font-size: 0.875rem; }
 
 /** Lists */
-ul, ol { margin-left: 2rem; }
+ul, ol { margin-left: 1rem; }
 
 li > ul, li > ol { margin-bottom: 0; }
 
@@ -563,11 +563,6 @@ hr { width: 30%; border: none; border-top: 1px solid #b1cef4; margin: 2rem auto;
 .markdown-body h6 {
     font-size: 0.85em;
     color: #777;
-}
-
-.markdown-body ul,
-.markdown-body ol {
-    padding-left: 2em;
 }
 
 .markdown-body ul ul,
