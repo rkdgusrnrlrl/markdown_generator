@@ -8,6 +8,7 @@ IMG_NAME="${PROJECT_NAME}_img"
 IMG_VER="0.03"
 
 CONT_NAME="${PROJECT_NAME}_cont"
+DOCKER_NETWORK_NAME="docker-network"
 
 DIR=$(pwd)
 
@@ -22,4 +23,4 @@ if [[ "$(docker ps -a | grep $CONT_NAME 2> /dev/null)" != "" ]]; then
 fi
 
 #run script
-docker run -itd --name $CONT_NAME -v ${DIR}/public:/data/public --network docker-network "${IMG_NAME}:${IMG_VER}" bash
+docker run -itd --name $CONT_NAME -v "${DIR}/public:/data/public" --network $DOCKER_NETWORK_NAME "${IMG_NAME}:${IMG_VER}"
