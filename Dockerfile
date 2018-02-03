@@ -1,3 +1,5 @@
+FROM keymetrics/pm2:latest
+
 RUN mkdir /data
 COPY . /data/
 # delete files
