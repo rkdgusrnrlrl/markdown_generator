@@ -16,9 +16,15 @@
     "highlight": "^0.2.4",
     "highlight.js": "^9.4.0",
     "html-entities": "^1.2.0",
+    "lodash": "^4.17.10",
     "marked": "^0.3.5",
     "moment": "^2.14.1",
     "morgan": "~1.6.1",
+    "request": "^2.85.0",
+    "request-promise-native": "^1.0.5",
     "serve-favicon": "~2.3.0"
+  },
+  "devDependencies": {
+    "mocha": "^5.1.1"
   }
 }
