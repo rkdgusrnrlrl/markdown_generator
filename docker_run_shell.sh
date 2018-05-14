@@ -5,7 +5,7 @@ echo "Docker 빌드를 시작합니다."
 PROJECT_NAME="mark"
 
 IMG_NAME="${PROJECT_NAME}_img"
-IMG_VER="0.03"
+IMG_VER="0.04"
 
 CONT_NAME="${PROJECT_NAME}_cont"
 DOCKER_NETWORK_NAME="docker-network"
