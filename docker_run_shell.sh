@@ -23,4 +23,4 @@ if [[ "$(docker ps -a | grep $CONT_NAME 2> /dev/null)" != "" ]]; then
 fi
 
 #run script
-docker run -itd --name $CONT_NAME -v "${DIR}/public:/data/public" --network $DOCKER_NETWORK_NAME "${IMG_NAME}:${IMG_VER}"
+docker run -itd --name $CONT_NAME -v "${DIR}/public:/data/public" -v "${DIR}/log:/data/log" --network $DOCKER_NETWORK_NAME "${IMG_NAME}:${IMG_VER}"
